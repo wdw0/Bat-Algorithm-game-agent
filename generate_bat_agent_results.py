@@ -6,7 +6,7 @@ def main():
     scores = []
 
     for i in range(30):
-        score = evaluate(weights, n_episodes=1)
+        score = evaluate(weights, n_episodes=1, render=False)
         scores.append(score)
         print(f"Execução {i+1}/30: {score:.2f}")
 

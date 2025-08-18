@@ -3,8 +3,7 @@ import numpy as np
 class SimpleNeuralNetwork:
     def __init__(self, input_size=27, hidden1=32, hidden2=16, output_size=3):
         """
-        Inicializa a arquitetura da rede neural com duas camadas ocultas e uma de saída.
-        Todos os pesos são inicializados com zeros e atualizados com `set_weights`.
+        Inicializa a arquitetura da rede neural com duas camadas ocultas e uma de saída (compatível com best_agent_weights.npy antigo).
         """
         self.input_size = input_size
         self.hidden1 = hidden1
@@ -18,7 +17,6 @@ class SimpleNeuralNetwork:
             (hidden2 + 1) * output_size     # pesos + bias da camada de saída
         )
 
-        # Inicialização com zeros (os pesos reais serão atribuídos depois)
         self.set_weights(np.zeros(self.total_weights))
 
     def set_weights(self, weights: np.ndarray):
@@ -49,16 +47,10 @@ class SimpleNeuralNetwork:
         # Entrada com bias
         x = np.append(x, 1)
         h1 = np.tanh(np.dot(x, self.w1))
-
-        # Primeira camada oculta com bias
         h1 = np.append(h1, 1)
         h2 = np.tanh(np.dot(h1, self.w2))
-
-        # Segunda camada oculta com bias
         h2 = np.append(h2, 1)
         out = self._softmax(np.dot(h2, self.w3))
-
-        # Ação correspondente ao maior valor da saída softmax
         return int(np.argmax(out))
 
     def _softmax(self, x: np.ndarray) -> np.ndarray:
@@ -79,5 +71,5 @@ class SimpleNeuralNetwork:
         h1 = np.append(h1, 1)
         h2 = np.tanh(np.dot(h1, self.w2))
         h2 = np.append(h2, 1)
-        return np.dot(h2, self.w3)          
+        return np.dot(h2, self.w3)
         

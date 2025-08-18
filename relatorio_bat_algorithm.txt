@@ -1,0 +1,49 @@
+# Relatório de Desenvolvimento e Otimização do Agente Bat Algorithm
+
+## 1. Objetivo do Trabalho
+O objetivo foi implementar e otimizar um agente de Reinforcement Learning para um ambiente de sobrevivência, utilizando o Bat Algorithm como metaheurística para otimização dos pesos de uma rede neural. O foco foi maximizar a pontuação do agente, respeitando as restrições do trabalho (população ≤ 100, iterações ≤ 1000, sem alterar a pasta game/).
+
+## 2. Estrutura Inicial
+- **Rede Neural:** Inicialmente, a arquitetura era 27 (input) → 32 (hidden1) → 16 (hidden2) → 3 (output), com funções de ativação tanh e softmax.
+- **Fitness:** A avaliação do agente era feita pela média ou mediana de múltiplas execuções, para reduzir o impacto de outliers.
+- **Bat Algorithm:** Implementação própria, com parâmetros ajustáveis (alpha, gamma, f_min, f_max, loudness, pulse_rate).
+
+## 3. Melhorias e Ajustes Realizados
+### 3.1. Debug e Diagnóstico
+- Foram adicionados prints e logs para entender o comportamento do agente e do fitness.
+- Testes com diferentes funções de fitness (média vs. mediana) para maior robustez.
+
+### 3.2. Diversidade Populacional
+- Inicialização da população do Bat Algorithm dividida: metade dos indivíduos com pesos em [-5,5], metade em [-10,10], aumentando a diversidade e a chance de encontrar bons pesos.
+
+### 3.3. Penalização por Distância das Bordas
+- Implementada uma nova função de fitness que penaliza agentes que ficam longe do centro vertical da tela, incentivando o agente a evitar as bordas, onde tende a morrer mais rápido.
+- A penalização é proporcional à distância média do agente ao centro durante cada episódio.
+
+### 3.4. Alteração da Topologia da Rede Neural
+- A rede neural foi expandida para 27 (input) → 32 → 16 → 8 → 3 (output), adicionando uma terceira camada oculta para aumentar a capacidade de aprendizado.
+- O cálculo do número de pesos (dimension) foi ajustado em todos os scripts relevantes.
+
+### 3.5. Ajustes de Output e Avaliação
+- O script de avaliação (`generate_bat_agent_results.py`) foi ajustado para permitir visualização do jogo durante os testes finais.
+- O resultado é salvo em arquivo texto, incluindo média e desvio padrão dos scores.
+
+## 4. Fluxo de Trabalho
+1. **Treinamento:** Executar `train_agent.py` para otimizar os pesos da rede neural com a nova arquitetura e função de fitness penalizada.
+2. **Avaliação:** Executar `generate_bat_agent_results.py` para avaliar o agente treinado, agora com visualização do ambiente.
+3. **Análise:** Os resultados (scores, média, desvio padrão) são salvos em `bat_agent_result.txt`.
+
+## 5. Lições e Observações
+- A penalização por distância ao centro ajudou a evitar mortes rápidas nas bordas.
+- A arquitetura mais profunda permitiu maior flexibilidade, mas exige mais tempo de otimização.
+- O uso da mediana como fitness tornou o processo mais robusto a outliers.
+- A diversidade inicial da população foi fundamental para evitar mínimos locais.
+
+## 6. Sugestões para Trabalhos Futuros
+- Testar outras funções de penalização (ex: penalizar também variação brusca de posição).
+- Explorar arquiteturas de rede ainda mais profundas ou com dropout.
+- Implementar logs automáticos de hiperparâmetros e resultados para facilitar experimentação.
+
+---
+
+Este relatório cobre todas as principais decisões, implementações e aprendizados do desenvolvimento do agente Bat Algorithm para o ambiente de sobrevivência.

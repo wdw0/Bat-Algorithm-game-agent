@@ -4,7 +4,7 @@ from game.config import GameConfig
 from agents.neural_network_agent import NeuralNetworkAgent
 
 
-def evaluate(weights: np.ndarray, n_episodes: int = 5, render: bool = False) -> float:
+def evaluate(weights: np.ndarray, n_episodes: int = 5, render: bool = True) -> float:
     """
     Avalia o desempenho de um conjunto de pesos em múltiplas execuções do jogo.
 
