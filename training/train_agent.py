@@ -1,39 +1,31 @@
+
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from utils import evaluate
-#from metaheuristics.bat_algorithm_refined import BatAlgorithm
 from metaheuristics.bat_algorithm import BatAlgorithm
 
 
-def main():
-    # Número de pesos da rede (27->64->32->16->8->3 com bias):
+
+
+    # Arquitetura compatível com best_agent_weights.npy
     input_size = 27
-    hidden1 = 64
-    hidden2 = 32
-    hidden3 = 16
-    hidden4 = 8
+    hidden1 = 32
+    hidden2 = 16
     output_size = 3
     dimension = (
         (input_size + 1) * hidden1 +
         (hidden1 + 1) * hidden2 +
-        (hidden2 + 1) * hidden3 +
-        (hidden3 + 1) * hidden4 +
-        (hidden4 + 1) * output_size
+        (hidden2 + 1) * output_size
     )
 
-    # Inicializa o otimizador
-  
-
     def fitness_centered(w):
-        # Penaliza distância média do centro da tela
         from game.core import SurvivalGame
         from game.config import GameConfig
         from agents.neural_network_agent import NeuralNetworkAgent
         scores = []
         distances = []
         n_episodes = 10
-        for ep in range(n_episodes):
+        for _ in range(n_episodes):
             config = GameConfig(num_players=1, render_grid=False)
             game = SurvivalGame(config, render=False)
             agent = NeuralNetworkAgent(w)
@@ -42,14 +34,12 @@ def main():
                 state = game.get_state(0, include_internals=True)
                 action = agent.predict(state)
                 game.update([action])
-                # Distância vertical ao centro
                 center_y = config.screen_height / 2
                 dist = abs(game.players[0].y - center_y)
                 episode_distances.append(dist)
             scores.append(game.players[0].score)
             distances.append(np.mean(episode_distances))
-        # Penalidade: lambda controla o peso da penalização
-        lambda_penalty = 0.01  # ajuste conforme necessário
+        lambda_penalty = 0.01
         median_score = np.median(scores)
         mean_distance = np.mean(distances)
         return median_score - lambda_penalty * mean_distance
@@ -57,8 +47,8 @@ def main():
     bat = BatAlgorithm(
         fitness_function=fitness_centered,
         dimension=dimension,
-        population_size=100,         # ← máximo permitido
-        generations=1000,            # ← máximo permitido
+        population_size=100,
+        generations=1000,
         f_min=1.0,
         f_max=3.0,
         alpha=0.97,
@@ -67,9 +57,6 @@ def main():
         pulse_rate_init=0.5
     )
 
-    
-    # Diversidade inicial: metade da população [-5,5], metade [-10,10]
-    # (Necessário alterar bat.positions após instanciar)
     start_time = time.time()
     half = bat.population_size // 2
     bat.positions[:half] = np.random.uniform(-5, 5, (half, dimension))
@@ -79,23 +66,16 @@ def main():
     bat.best = bat.positions[bat.best_index].copy()
     bat.best_score = bat.fitness[bat.best_index]
 
-    # Roda a otimização
     best_weights, best_score, history = bat.optimize(verbose=True)
-
-    # Salva os melhores pesos
     np.save("best_agent_weights.npy", best_weights)
-    
+
     end_time = time.time()
-    
     elapsed = end_time - start_time
     elapsed_hours = elapsed // 3600
     elapsed_minutes = (elapsed % 3600) // 60
     elapsed_seconds = int(elapsed % 60)
-
     print(f"\nMelhor pontuação média encontrada: {best_score:.2f}")
     print(f"\n⏱️ Tempo total de execução: {int(elapsed_hours)}h {int(elapsed_minutes)}m {elapsed_seconds}s")
-
-    # Plota a evolução do fitness ao longo das iterações
     plt.plot(history)
     plt.xlabel("Iteração")
     plt.ylabel("Melhor Score (Mediana)")
@@ -103,7 +83,6 @@ def main():
     plt.grid()
     plt.savefig("fitness_evolution.png")
     plt.show()
-
 
 
 if __name__ == "__main__":

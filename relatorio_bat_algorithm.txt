@@ -1,49 +1,80 @@
-# Relatório de Desenvolvimento e Otimização do Agente Bat Algorithm
+
+# Relatório de Desenvolvimento, Evolução e Justificativas do Agente Bat Algorithm
+
+
 
 ## 1. Objetivo do Trabalho
-O objetivo foi implementar e otimizar um agente de Reinforcement Learning para um ambiente de sobrevivência, utilizando o Bat Algorithm como metaheurística para otimização dos pesos de uma rede neural. O foco foi maximizar a pontuação do agente, respeitando as restrições do trabalho (população ≤ 100, iterações ≤ 1000, sem alterar a pasta game/).
+O objetivo deste trabalho foi implementar, otimizar e analisar um agente de Reinforcement Learning para um ambiente de sobrevivência, utilizando o Bat Algorithm como metaheurística para otimização dos pesos de uma rede neural. O foco foi maximizar a pontuação do agente, respeitando as restrições do trabalho (população ≤ 100, iterações ≤ 1000, sem alterar a pasta game/ e sem uso de bibliotecas externas de metaheurísticas ou classificadores). Além disso, buscou-se garantir clareza, modularidade e reprodutibilidade do código, visando facilitar a análise dos resultados e a comparação entre diferentes abordagens.
 
-## 2. Estrutura Inicial
-- **Rede Neural:** Inicialmente, a arquitetura era 27 (input) → 32 (hidden1) → 16 (hidden2) → 3 (output), com funções de ativação tanh e softmax.
-- **Fitness:** A avaliação do agente era feita pela média ou mediana de múltiplas execuções, para reduzir o impacto de outliers.
-- **Bat Algorithm:** Implementação própria, com parâmetros ajustáveis (alpha, gamma, f_min, f_max, loudness, pulse_rate).
 
-## 3. Melhorias e Ajustes Realizados
-### 3.1. Debug e Diagnóstico
-- Foram adicionados prints e logs para entender o comportamento do agente e do fitness.
-- Testes com diferentes funções de fitness (média vs. mediana) para maior robustez.
+
+## 2. Estrutura Inicial e Justificativas
+- **Rede Neural:** Inicialmente, a arquitetura era 27 (input) → 32 (hidden1) → 16 (hidden2) → 3 (output), com funções de ativação tanh nas camadas ocultas e softmax na saída. Essa topologia foi escolhida por equilibrar capacidade de representação e viabilidade de otimização, considerando o espaço de busca e as restrições computacionais.
+- **Fitness:** A avaliação do agente era feita pela média ou mediana de múltiplas execuções, para reduzir o impacto de outliers e garantir robustez frente à variabilidade do ambiente.
+- **Bat Algorithm:** Implementação própria, com parâmetros ajustáveis (alpha, gamma, f_min, f_max, loudness, pulse_rate), respeitando as limitações do trabalho e buscando simplicidade e flexibilidade para experimentação.
+
+
+
+## 3. Melhorias, Ajustes e Evolução do Código
+
+### 3.1. Debug, Diagnóstico e Modularização
+Durante o desenvolvimento, foram adicionados prints e logs para entender o comportamento do agente e do fitness, além de testes com diferentes funções de fitness (média vs. mediana) para maior robustez. O código foi modularizado em arquivos distintos (`simple_nn.py`, `neural_network_agent.py`, `bat_algorithm.py`, `train_agent.py`, `utils.py`, etc.), facilitando manutenção, testes e futuras alterações.
 
 ### 3.2. Diversidade Populacional
-- Inicialização da população do Bat Algorithm dividida: metade dos indivíduos com pesos em [-5,5], metade em [-10,10], aumentando a diversidade e a chance de encontrar bons pesos.
+Para evitar mínimos locais e aumentar a chance de encontrar bons pesos, a população do Bat Algorithm passou a ser inicializada de forma dividida: metade dos indivíduos com pesos em [-5,5], metade em [-10,10]. Essa estratégia aumentou a diversidade e melhorou a exploração do espaço de busca.
 
 ### 3.3. Penalização por Distância das Bordas
-- Implementada uma nova função de fitness que penaliza agentes que ficam longe do centro vertical da tela, incentivando o agente a evitar as bordas, onde tende a morrer mais rápido.
-- A penalização é proporcional à distância média do agente ao centro durante cada episódio.
+Foi implementada uma nova função de fitness que penaliza agentes que ficam longe do centro vertical da tela, incentivando o agente a evitar as bordas, onde tende a morrer mais rápido. A penalização é proporcional à distância média do agente ao centro durante cada episódio, tornando o agente mais robusto e menos propenso a estratégias subótimas.
 
-### 3.4. Alteração da Topologia da Rede Neural
-- A rede neural foi expandida para 27 (input) → 32 → 16 → 8 → 3 (output), adicionando uma terceira camada oculta para aumentar a capacidade de aprendizado.
-- O cálculo do número de pesos (dimension) foi ajustado em todos os scripts relevantes.
+### 3.4. Alteração da Topologia da Rede Neural e Experimentos
+Buscando maior capacidade de aprendizado, a rede neural foi expandida para 27 (input) → 32 → 16 → 8 → 3 (output), adicionando uma terceira camada oculta. O cálculo do número de pesos (dimension) foi ajustado em todos os scripts relevantes (`simple_nn.py`, `train_agent.py`, etc.). O Bat Algorithm também foi adaptado para lidar com o novo espaço de busca, e o agente de treino foi ajustado para suportar a nova arquitetura.
 
-### 3.5. Ajustes de Output e Avaliação
-- O script de avaliação (`generate_bat_agent_results.py`) foi ajustado para permitir visualização do jogo durante os testes finais.
-- O resultado é salvo em arquivo texto, incluindo média e desvio padrão dos scores.
+#### Justificativa da Mudança
+A motivação para aumentar a profundidade da rede foi permitir que o agente aprendesse padrões mais complexos e, potencialmente, alcançasse scores mais altos. No entanto, redes mais profundas aumentam o risco de overfitting e tornam a otimização por metaheurísticas mais difícil, especialmente sob restrições de população e iterações.
 
-## 4. Fluxo de Trabalho
-1. **Treinamento:** Executar `train_agent.py` para otimizar os pesos da rede neural com a nova arquitetura e função de fitness penalizada.
-2. **Avaliação:** Executar `generate_bat_agent_results.py` para avaliar o agente treinado, agora com visualização do ambiente.
-3. **Análise:** Os resultados (scores, média, desvio padrão) são salvos em `bat_agent_result.txt`.
+### 3.5. Ajustes de Output, Avaliação e Limpeza de Código
+O script de avaliação (`generate_bat_agent_results.py`) foi ajustado para permitir visualização do jogo durante os testes finais, e o resultado passou a ser salvo em arquivo texto, incluindo média e desvio padrão dos scores. O código de todos os scripts principais foi limpo, removendo comentários redundantes, imports não utilizados e padronizando nomes e argumentos. Isso facilitou a manutenção, depuração e reprodutibilidade dos experimentos.
 
-## 5. Lições e Observações
-- A penalização por distância ao centro ajudou a evitar mortes rápidas nas bordas.
-- A arquitetura mais profunda permitiu maior flexibilidade, mas exige mais tempo de otimização.
-- O uso da mediana como fitness tornou o processo mais robusto a outliers.
-- A diversidade inicial da população foi fundamental para evitar mínimos locais.
+### 3.6. Resultados dos Experimentos e Reversão da Topologia
+Apesar do aumento da capacidade da rede, os resultados práticos não melhoraram significativamente. Observou-se que a nova topologia dificultou a convergência do Bat Algorithm, provavelmente devido ao aumento do espaço de busca e à limitação de iterações e população impostas pelo trabalho. Além disso, a compatibilidade com pesos previamente salvos foi perdida, dificultando a análise longitudinal dos resultados.
+
+**Diante disso, optou-se por reverter a topologia da rede para a configuração original (27-32-16-3), que já havia apresentado resultados satisfatórios e era compatível com os pesos salvos.**
+
+Importante destacar que, mesmo com a reversão da topologia, todas as melhorias implementadas no restante do código foram mantidas: Bat Algorithm mais robusto, agente de treino limpo e modular, funções de avaliação e análise estatística aprimoradas, e scripts de output e visualização otimizados.
+
+#### Reflexão sobre a Decisão
+Essa experiência reforçou a importância de alinhar a complexidade do modelo com a capacidade de otimização disponível e as restrições do problema. Em contextos com limitação de recursos, uma topologia mais simples, porém bem ajustada, pode ser mais eficaz do que arquiteturas profundas e difíceis de otimizar.
+
+
+
+## 4. Fluxo de Trabalho e Reprodutibilidade
+O fluxo de trabalho foi desenhado para garantir reprodutibilidade e facilitar a análise dos resultados:
+1. **Treinamento:** Executar `train_agent.py` para otimizar os pesos da rede neural (com topologia 27-32-16-3) usando a função de fitness penalizada.
+2. **Avaliação:** Executar `generate_bat_agent_results.py` para avaliar o agente treinado, com possibilidade de visualização do ambiente.
+3. **Análise:** Os resultados (scores, média, desvio padrão) são salvos em `bat_agent_result.txt` e podem ser analisados com `evaluate_results.py`.
+
+
+
+## 5. Lições, Observações e Justificativas Finais
+- A penalização por distância ao centro ajudou a evitar mortes rápidas nas bordas e tornou o agente mais consistente.
+- A arquitetura mais profunda permitiu maior flexibilidade, mas exigiu mais tempo de otimização e não trouxe ganhos práticos sob as restrições do trabalho.
+- O uso da mediana como fitness tornou o processo mais robusto a outliers e variações extremas.
+- A diversidade inicial da população foi fundamental para evitar mínimos locais e melhorar a exploração.
+- A modularização e limpeza do código facilitaram ajustes, depuração e reprodutibilidade dos experimentos.
+- A reversão da topologia da rede, mantendo as melhorias no restante do código, mostrou-se a melhor estratégia para equilibrar desempenho, compatibilidade e clareza.
+
+
 
 ## 6. Sugestões para Trabalhos Futuros
-- Testar outras funções de penalização (ex: penalizar também variação brusca de posição).
-- Explorar arquiteturas de rede ainda mais profundas ou com dropout.
-- Implementar logs automáticos de hiperparâmetros e resultados para facilitar experimentação.
+- Testar outras funções de penalização (ex: penalizar também variação brusca de posição ou tempo de resposta).
+- Explorar arquiteturas de rede mais profundas, com regularização (dropout, batch normalization) e diferentes funções de ativação.
+- Implementar logs automáticos de hiperparâmetros e resultados para facilitar experimentação e análise estatística.
+- Investigar outras metaheurísticas (ex: PSO, DE) e comparar desempenho sob as mesmas restrições.
+
 
 ---
 
-Este relatório cobre todas as principais decisões, implementações e aprendizados do desenvolvimento do agente Bat Algorithm para o ambiente de sobrevivência.
+
+---
+
+Este relatório cobre detalhadamente todas as principais decisões, justificativas, experimentos, implementações e aprendizados do desenvolvimento do agente Bat Algorithm para o ambiente de sobrevivência. O processo de evolução do código, as tentativas de aprimoramento e a escolha final pela simplicidade e clareza são exemplos práticos da importância do ciclo de experimentação, análise crítica e adaptação em projetos de Inteligência Artificial sob restrições reais.
